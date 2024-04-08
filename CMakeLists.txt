@@ -113,10 +113,19 @@ set(CMAKE_THREAD_PREFER_PTHREAD)
 set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
 
-if(NOT PDB_REDO_META)
+if(NOT (libmcfp_FOUND OR TARGET libmcfp))
 	find_package(libmcfp REQUIRED)
+endif()
+
+if(NOT (dssp_FOUND OR TARGET dssp))
 	find_package(dssp REQUIRED)
+endif()
+
+if(NOT (cifpp_FOUND OR TARGET cifpp))
 	find_package(cifpp REQUIRED)
+endif()
+
+if(NOT (zeep_FOUND OR TARGET zeep))
 	find_package(zeep 5.1.8 REQUIRED)
 endif()
 
@@ -146,8 +155,8 @@ endif()
 
 target_include_directories(tortoize PRIVATE ${PROJECT_BINARY_DIR})
 
-if(PDB_REDO_META)
-	target_include_directories(tortoize PRIVATE ${CMAKE_PROJECT_DIR}/dssp/include)
+if(NOT (dssp_FOUND OR TARGET dssp))
+	find_package(dssp REQUIRED)
 endif()
 
 target_link_libraries(tortoize dssp::dssp cifpp::cifpp zeep::zeep std::filesystem libmcfp::libmcfp)
