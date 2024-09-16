@@ -1,24 +1,33 @@
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const UglifyJsPlugin = require('uglify-js-plugin');
-const webpack = require("webpack");
+const webpack = require('webpack');
+const TerserPlugin = require('terser-webpack-plugin');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const path = require('path');
 
-const SCRIPTS = __dirname + "/webapp/";
-const SCSS = __dirname + "/scss/";
-const DEST = __dirname + "/docroot/scripts/";
+const SCRIPTS = path.resolve(__dirname, "webapp");
+const SCSS = path.resolve(__dirname, "scss");
+const DEST = path.resolve(__dirname, "docroot/scripts");
 
 module.exports = (env) => {
 
+	const PRODUCTION = env != null && env.PRODUCTION;
+
 	const webpackConf = {
 		entry: {
-			'pdb-redo-style': SCSS + "pdb-redo-bootstrap.scss",
-			'index': SCRIPTS + 'index.js'
+			'pdb-redo-style': path.resolve(SCSS, "pdb-redo-bootstrap.scss"),
+			'index': path.resolve(SCRIPTS, 'index.js')
+		},
+
+		output: {
+			path: DEST,
+			clean: true
 		},
 
 		module: {
 			rules: [
 				{
-					test: /\.js$/,
+					test: /\.js/,
 					exclude: /node_modules/,
 					use: {
 						loader: "babel-loader",
@@ -37,56 +46,60 @@ module.exports = (env) => {
 					}
 				},
 				{
-					test: /\.(png)/,
-					loader: 'file-loader',
-					options: {
-						name: '[name].[ext]',
-						outputPath: 'images/',
-						publicPath: '../images/'
-					}
-				},
-				{
-					test: /\.s[ac]ss$/i,
+					test: /\.(sa|sc|c)ss$/i,
 					use: [
 						MiniCssExtractPlugin.loader,
-						'css-loader',
-						'sass-loader'
+						"css-loader",
+						"postcss-loader",
+						"sass-loader"
 					]
+				},
+
+				{
+					test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+					include: path.resolve(__dirname, './node_modules/bootstrap-icons/font/fonts'),
+					type: 'asset/resource',
+					generator: {
+						filename: '../fonts/[name][ext]'
+					}
+				},
+
+				{
+					test: /\.png$/,
+					type: 'asset/resource',
+					generator: {
+						filename: '../images/[name][ext]'
+					}
 				}
 			]
 		},
 
-		output: {
-			path: DEST,
-			filename: "./[name].js"
+		resolve: {
+			extensions: ['.js', '.scss'],
 		},
 
 		plugins: [
-			new CleanWebpackPlugin({
-				cleanOnceBeforeBuildPatterns: [
-					'css/**/*',
-					'scripts/**/*',
-					'fonts/**/*',
-					'!images*'
-				]
-			}),
-			new webpack.ProvidePlugin({
-				$: 'jquery',
-				jQuery: 'jquery',
-				CodeMirror: 'codemirror'
-			}),
 			new MiniCssExtractPlugin({
-				filename: '../css/[name].css',
-				chunkFilename: '../css/[id].css'
-			})
-		]
+				filename: "../css/[name].css"
+			}),
+			new CleanWebpackPlugin({
+				verbose: true,
+				cleanOnceBeforeBuildPatterns: [
+					path.resolve(__dirname, 'scripts'),
+					path.resolve(__dirname, 'fonts')
+				]
+			})],
+
+		optimization: { minimizer: [] }
 	};
 
-    const PRODUCTIE = env != null && env.PRODUCTIE;
-
-	if (PRODUCTIE) {
+	if (PRODUCTION) {
 		webpackConf.mode = "production";
-		webpackConf.plugins.push(new UglifyJsPlugin({parallel: 4}))
+
+		webpackConf.optimization.minimizer.push(
+			new TerserPlugin({ /* additional options here */ }),
+			new UglifyJsPlugin({ parallel: 4 })
+		);
 	} else {
 		webpackConf.mode = "development";
 		webpackConf.devtool = 'source-map';
