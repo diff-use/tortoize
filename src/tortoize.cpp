@@ -282,7 +282,7 @@ void DecompressSimpleArraySelector(IBitStream &inBits, std::vector<uint32_t> &ou
 	uint32_t width = kStartWidth;
 	uint32_t span = 0;
 
-	// The array should be initilialized to the expected size!
+	// The array should be initialized to the expected size!
 	auto size = outArray.size();
 	auto a = outArray.begin();
 

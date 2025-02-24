@@ -39,7 +39,7 @@ include(GenerateExportHeader)
 include(CTest)
 
 set(CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Filesystem REQUIRED)
@@ -131,8 +131,7 @@ endif()
 
 add_executable(tortoize
 	${PROJECT_SOURCE_DIR}/src/tortoize.cpp
-	${PROJECT_SOURCE_DIR}/src/tortoize-main.cpp
-	${TORTOIZE_RESOURCE})
+	${PROJECT_SOURCE_DIR}/src/tortoize-main.cpp)
 
 if(BUILD_WEBSERVICE)
 	target_compile_definitions(tortoize PRIVATE WEBSERVICE)
