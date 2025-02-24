@@ -6,10 +6,10 @@
 # modification, are permitted provided that the following conditions are met:
 
 # 1. Redistributions of source code must retain the above copyright notice, this
-#    list of conditions and the following disclaimer
+# list of conditions and the following disclaimer
 # 2. Redistributions in binary form must reproduce the above copyright notice,
-#    this list of conditions and the following disclaimer in the documentation
-#    and/or other materials provided with the distribution.
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -22,27 +22,25 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.25)
 
 # set the project name
-project(tortoize VERSION 2.0.13 LANGUAGES CXX)
+project(tortoize VERSION 2.0.14 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+include(FindOrFetch)
 include(GNUInstallDirs)
 include(CheckFunctionExists)
 include(CheckIncludeFiles)
 include(CheckLibraryExists)
 include(CMakePackageConfigHelpers)
-include(FindFilesystem)
 include(GenerateExportHeader)
 include(CTest)
 
 set(CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-find_package(Filesystem REQUIRED)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers")
@@ -113,29 +111,16 @@ set(CMAKE_THREAD_PREFER_PTHREAD)
 set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
 
-if(NOT (mcfp_FOUND OR TARGET mcfp))
-	find_package(mcfp REQUIRED)
-endif()
+find_package(nlohmann_json REQUIRED)
 
-if(NOT (dssp_FOUND OR TARGET dssp))
-	find_package(dssp REQUIRED)
-endif()
+find_or_fetch_package(mcfp VERSION 1.3.5 GIT_REPOSITORY https://github.com/mhekkel/libmcfp GIT_TAG b6c62a3)
+find_or_fetch_package(cifpp VERSION 7 GIT_REPOSITORY https://github.com/PDB-REDO/libcifpp.git GIT_TAG v7.0.9 VARIABLES "CIFPP_SHARE_DIR")
 
-if(NOT (cifpp_FOUND OR TARGET cifpp))
-	find_package(cifpp REQUIRED)
-endif()
-
-if(NOT (zeep_FOUND OR TARGET zeep))
-	find_package(zeep 5.1.8 REQUIRED)
-endif()
+add_subdirectory(dssp EXCLUDE_FROM_ALL)
 
 add_executable(tortoize
 	${PROJECT_SOURCE_DIR}/src/tortoize.cpp
 	${PROJECT_SOURCE_DIR}/src/tortoize-main.cpp)
-
-if(BUILD_WEBSERVICE)
-	target_compile_definitions(tortoize PRIVATE WEBSERVICE)
-endif()
 
 if(USE_RSRC)
 	list(APPEND RESOURCES
@@ -145,23 +130,15 @@ if(USE_RSRC)
 		${CIFPP_SHARE_DIR}/mmcif_ddl.dic
 		${CIFPP_SHARE_DIR}/mmcif_ma.dic)
 
-	if(BUILD_WEBSERVICE)
-		list(APPEND RESOURCES ${PROJECT_SOURCE_DIR}/docroot/)
-	endif()
-
 	mrc_target_resources(tortoize ${RESOURCES})
 endif()
 
 target_include_directories(tortoize PRIVATE ${PROJECT_BINARY_DIR})
 
-if(NOT (dssp_FOUND OR TARGET dssp))
-	find_package(dssp REQUIRED)
-endif()
-
-target_link_libraries(tortoize dssp::dssp cifpp::cifpp zeep::zeep std::filesystem mcfp::mcfp)
+target_link_libraries(tortoize dssp::dssp cifpp::cifpp mcfp::mcfp)
 target_compile_definitions(tortoize PUBLIC NOMINMAX=1)
 
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS tortoize
 	RUNTIME DESTINATION ${BIN_INSTALL_DIR}
 )
 
@@ -170,25 +147,31 @@ if(NOT USE_RSRC)
 		DESTINATION ${CIFPP_SHARE_DIR})
 endif()
 
+if(BUILD_WEBSERVICE)
+	find_package(zeep 6 REQUIRED)
+
+	if(NOT USE_RSRC)
+		message(FATAL_ERROR "Web service needs mrc/resources")
+	endif()
+
+	add_executable(tortoized
+		${PROJECT_SOURCE_DIR}/src/tortoize.cpp
+		${PROJECT_SOURCE_DIR}/src/tortoize-server-main.cpp
+	)
+
+	target_link_libraries(tortoized dssp::dssp cifpp::cifpp mcfp::mcfp zeep::zeep)
+
+	mrc_target_resources(tortoized ${RESOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/docroot/)
+
+	install(TARGETS tortoized
+		RUNTIME DESTINATION ${SBIN_INSTALL_DIR}
+	)
+endif()
+
 # manual
 install(FILES doc/tortoize.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
 
 # Test code
 if(BUILD_TESTING)
-	enable_testing()
-
-	add_executable(tortoize-unit-test
-		${PROJECT_SOURCE_DIR}/test/tortoize-unit-test.cpp
-		${PROJECT_SOURCE_DIR}/src/tortoize.cpp)
-
-	target_compile_definitions(tortoize-unit-test PUBLIC NOMINMAX=1)
-	target_include_directories(tortoize-unit-test PRIVATE ${PROJECT_SOURCE_DIR}/src ${PROJECT_BINARY_DIR})
-
-	target_link_libraries(tortoize-unit-test dssp::dssp cifpp::cifpp zeep::zeep std::filesystem)
-
-	add_test(NAME tortoize-unit-test COMMAND $<TARGET_FILE:tortoize-unit-test> -- ${PROJECT_SOURCE_DIR}/test)
-
-	if(USE_RSRC)
-		mrc_target_resources(tortoize-unit-test ${RESOURCES})
-	endif()
+	add_subdirectory(test)
 endif()

@@ -25,10 +25,11 @@
  */
 
 #include <cif++.hpp>
-#include <zeep/json/element.hpp>
+
+#include <nlohmann/json.hpp>
 
 void buildDataFile(const std::filesystem::path &dir);
 
-zeep::json::element calculateZScores(const cif::mm::structure& structure);
+nlohmann::json calculateZScores(const cif::mm::structure& structure);
 
-zeep::json::element tortoize_calculate(const std::filesystem::path &xyzin);
+nlohmann::json tortoize_calculate(const std::filesystem::path &xyzin);

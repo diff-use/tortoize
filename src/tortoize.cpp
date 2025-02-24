@@ -34,7 +34,7 @@
 
 namespace fs = std::filesystem;
 
-using json = zeep::json::element;
+using json = nlohmann::json;
 
 // --------------------------------------------------------------------
 // simple integer compression, based somewhat on MRS code

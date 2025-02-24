@@ -4,3 +4,6 @@
 [submodule "gxrio"]
 	path = gxrio
 	url = https://github.com/mhekkel/gxrio.git
+[submodule "dssp"]
+	path = dssp
+	url = https://github.com/PDB-REDO/dssp.git

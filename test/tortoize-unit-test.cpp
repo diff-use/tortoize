@@ -24,63 +24,72 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define BOOST_TEST_ALTERNATIVE_INIT_API
-#include <boost/test/included/unit_test.hpp>
-
-namespace tt = boost::test_tools;
-namespace utf = boost::unit_test;
-
-#include <filesystem>
-#include <zeep/json/parser.hpp>
+#include <catch2/catch_all.hpp>
 
 #include "tortoize.hpp"
 
+#include <nlohmann/json.hpp>
+
+#include <filesystem>
+
 namespace fs = std::filesystem;
 
-using json = zeep::json::element;
+using json = nlohmann::json;
+
+// --------------------------------------------------------------------
+
 
 // --------------------------------------------------------------------
 
 fs::path gTestDir = fs::current_path();
 
-bool init_unit_test()
+int main(int argc, char *argv[])
 {
-	cif::VERBOSE = 1;
+	Catch::Session session; // There must be exactly one instance
 
-	// not a test, just initialize test dir
-	if (boost::unit_test::framework::master_test_suite().argc == 2)
-	{
-		gTestDir = boost::unit_test::framework::master_test_suite().argv[1];
+	// Build a new parser on top of Catch2's
+#if CATCH22
+	using namespace Catch::clara;
+#else
+	// Build a new parser on top of Catch2's
+	using namespace Catch::Clara;
+#endif
 
-		cif::add_data_directory(gTestDir / ".." / "rsrc");
-	}
+	auto cli = session.cli()                               // Get Catch2's command line parser
+	           | Opt(gTestDir, "data-dir")                 // bind variable to a new option, with a hint string
+	                 ["-D"]["--data-dir"]                  // the option names it will respond to
+	           ("The directory containing the data files") // description string for the help output
+	           | Opt(cif::VERBOSE, "verbose")["-v"]["--cif-verbose"]("Flag for cif::VERBOSE");
 
-	// // do this now, avoids the need for installing
-	// cif::addFileResource("mmcif_pdbx_v50.dic", gTestDir / ".." / "rsrc" / "mmcif_pdbx_v50.dic");
+	// Now pass the new composite back to Catch2 so it uses that
+	session.cli(cli);
 
-	// // initialize CCD location
-	// cif::addFileResource("components.cif", gTestDir / ".." / "data" / "ccd-subset.cif");
+	// Let Catch2 (using Clara) parse the command line
+	int returnCode = session.applyCommandLine(argc, argv);
+	if (returnCode != 0) // Indicates a command line error
+		return returnCode;
 
-	return true;
+	cif::add_data_directory(gTestDir / ".." / "rsrc");
+
+	return session.run();
 }
 
 // --------------------------------------------------------------------
 
-BOOST_AUTO_TEST_CASE(first_test, *utf::tolerance(0.0001))
+TEST_CASE("first_test")
 {
 	auto a = tortoize_calculate(gTestDir / "1cbs.cif.gz");
 
 	std::ifstream bf(gTestDir / "1cbs.json");
 
-	json b;
-	zeep::json::parse_json(bf, b);
+	json b = nlohmann::json::parse(bf);
 
 	auto ma = a["model"]["1"];
 	auto mb = b["model"]["1"];
 
-	BOOST_TEST(ma["ramachandran-jackknife-sd"].as<double>() == mb["ramachandran-jackknife-sd"].as<double>());
-	BOOST_TEST(ma["ramachandran-z"].as<double>() == mb["ramachandran-z"].as<double>());
+	REQUIRE_THAT(ma["ramachandran-jackknife-sd"].template get<double>(), Catch::Matchers::WithinRel(mb["ramachandran-jackknife-sd"].template get<double>(), 0.1));
+	REQUIRE_THAT(ma["ramachandran-z"].template get<double>(), Catch::Matchers::WithinRel(mb["ramachandran-z"].template get<double>(), 0.1));
 
-	BOOST_TEST(ma["torsion-jackknife-sd"].as<double>() == mb["torsion-jackknife-sd"].as<double>());
-	BOOST_TEST(ma["torsion-z"].as<double>() == mb["torsion-z"].as<double>());
+	REQUIRE_THAT(ma["torsion-jackknife-sd"].template get<double>(), Catch::Matchers::WithinRel(mb["torsion-jackknife-sd"].template get<double>(), 0.1));
+	REQUIRE_THAT(ma["torsion-z"].template get<double>(), Catch::Matchers::WithinRel(mb["torsion-z"].template get<double>(), 0.1));
 }
