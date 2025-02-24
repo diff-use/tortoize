@@ -113,8 +113,8 @@ set(CMAKE_THREAD_PREFER_PTHREAD)
 set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
 
-if(NOT (libmcfp_FOUND OR TARGET libmcfp))
-	find_package(libmcfp REQUIRED)
+if(NOT (mcfp_FOUND OR TARGET mcfp))
+	find_package(mcfp REQUIRED)
 endif()
 
 if(NOT (dssp_FOUND OR TARGET dssp))
@@ -158,7 +158,7 @@ if(NOT (dssp_FOUND OR TARGET dssp))
 	find_package(dssp REQUIRED)
 endif()
 
-target_link_libraries(tortoize dssp::dssp cifpp::cifpp zeep::zeep std::filesystem libmcfp::libmcfp)
+target_link_libraries(tortoize dssp::dssp cifpp::cifpp zeep::zeep std::filesystem mcfp::mcfp)
 target_compile_definitions(tortoize PUBLIC NOMINMAX=1)
 
 install(TARGETS ${PROJECT_NAME}
