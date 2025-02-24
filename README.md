@@ -1,28 +1,36 @@
 Tortoize
 ========
 
+[![github CI](https://github.com/PDB-REDO/tortoize/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/PDB-REDO/tortoize/actions)
+
 Application to calculate ramachandran z-scores.
 
 Building
 --------
 
-Make sure you install [libcif++](https://github.com/PDB-REDO/libcifpp) and [libzeep](https://github.com/mhekkel/libzeep) first before building.
+The easiest way to install tortoize is by installing [CCP4](https://www.ccp4.ac.uk/download/index.php)
 
-After that, building should be as easy as typing:
+It is possible to install tortoize on Linux without having CCP4. In that case you will have install some dependencies first. On Debian this boils down to:
 
+```console
+sudo apt-get update && sudo apt-get install libcatch2-dev nlohmann-json3-dev libeigen3-dev
 ```
-git clone https://github.com/PBD-REDO/tortoize.git
+
+And on Ubuntu, slightly different:
+
+```console
+sudo apt-get update && sudo apt-get install catch2 nlohmann-json3-dev libeigen3-dev
+```
+
+After that, building and installing should be as simple as:
+
+```console
+git clone https://github.com/PDB-REDO/tortoize.git
 cd tortoize
-mkdir build
-cd build
-cmake ..
-cmake --build . --config Release
-ctest -C Release
-cmake --install .
+cmake -S . -B build
+cmake --build build
+sudo cmake --install build
 ```
-
-This will install the `tortoize` program in `$HOME/.local/bin`. If you want to
-install elsewhere, specify the prefix with the [CMAKE_INSTALL_PREFIX](https://cmake.org/cmake/help/v3.21/variable/CMAKE_INSTALL_PREFIX.html) variable.
 
 Usage
 -----
