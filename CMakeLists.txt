@@ -166,6 +166,13 @@ if(BUILD_WEBSERVICE)
 	install(TARGETS tortoized
 		RUNTIME DESTINATION ${SBIN_INSTALL_DIR}
 	)
+
+	set(TORTOIZED_EXE "${CMAKE_INSTALL_FULL_SBINDIR}/tortoized")
+	set(TORTOIZED_PID "/var/run/tortoized")
+
+	configure_file(tortoized.service.in ${CMAKE_CURRENT_BINARY_DIR}/tortoized.service @ONLY)
+
+	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/tortoized.service" DESTINATION "/etc/systemd/system")
 endif()
 
 # manual

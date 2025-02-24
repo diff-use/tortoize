@@ -229,7 +229,7 @@ int start_server(int argc, char *argv[])
 #endif
 		 s->add_controller(new tortoize_rest_controller());
 		 s->add_controller(new tortoize_html_controller());
-		 return s; }, kProjectName);
+		 return s; }, "tortoized");
 
 	std::string command = config.operands().front();
 
