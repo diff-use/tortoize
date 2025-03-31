@@ -116,7 +116,9 @@ find_package(nlohmann_json REQUIRED)
 find_or_fetch_package(mcfp VERSION 1.3.5 GIT_REPOSITORY https://github.com/mhekkel/libmcfp GIT_TAG b6c62a3)
 find_or_fetch_package(cifpp VERSION 7 GIT_REPOSITORY https://github.com/PDB-REDO/libcifpp.git GIT_TAG v7.0.9 VARIABLES "CIFPP_SHARE_DIR")
 
-add_subdirectory(dssp EXCLUDE_FROM_ALL)
+if (NOT TARGET dssp)
+	add_subdirectory(dssp EXCLUDE_FROM_ALL)
+endif()
 
 add_executable(tortoize
 	${PROJECT_SOURCE_DIR}/src/tortoize.cpp
