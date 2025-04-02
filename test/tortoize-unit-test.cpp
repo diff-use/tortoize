@@ -87,9 +87,9 @@ TEST_CASE("first_test")
 	auto ma = a["model"]["1"];
 	auto mb = b["model"]["1"];
 
-	REQUIRE_THAT(ma["ramachandran-jackknife-sd"].template get<double>(), Catch::Matchers::WithinRel(mb["ramachandran-jackknife-sd"].template get<double>(), 0.1));
-	REQUIRE_THAT(ma["ramachandran-z"].template get<double>(), Catch::Matchers::WithinRel(mb["ramachandran-z"].template get<double>(), 0.1));
+	CHECK_THAT(ma["ramachandran-jackknife-sd"].template get<double>(), Catch::Matchers::WithinRel(mb["ramachandran-jackknife-sd"].template get<double>(), 0.1));
+	CHECK_THAT(ma["ramachandran-z"].template get<double>(), Catch::Matchers::WithinRel(mb["ramachandran-z"].template get<double>(), 0.1));
 
-	REQUIRE_THAT(ma["torsion-jackknife-sd"].template get<double>(), Catch::Matchers::WithinRel(mb["torsion-jackknife-sd"].template get<double>(), 0.1));
-	REQUIRE_THAT(ma["torsion-z"].template get<double>(), Catch::Matchers::WithinRel(mb["torsion-z"].template get<double>(), 0.1));
+	CHECK_THAT(ma["torsion-jackknife-sd"].template get<double>(), Catch::Matchers::WithinRel(mb["torsion-jackknife-sd"].template get<double>(), 0.1));
+	CHECK_THAT(ma["torsion-z"].template get<double>(), Catch::Matchers::WithinRel(mb["torsion-z"].template get<double>(), 0.1));
 }

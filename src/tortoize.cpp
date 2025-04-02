@@ -588,6 +588,9 @@ void buildDataFile(const fs::path &dir)
 {
 	using namespace std::literals;
 
+	if constexpr (std::endian::native == std::endian::big)
+		throw std::logic_error("Sorry, this code works on little endian machines only");
+
 	// first read the global mean and sd
 
 	float mean_torsion, sd_torsion, mean_ramachandran, sd_ramachandran;
@@ -794,6 +797,21 @@ const Data &DataTable::loadRamachandranData(const std::string &aa, SecStrType ss
 	return *i;
 }
 
+template <typename T>
+void byteswap(T &v)
+{
+	T result;
+
+	char *pv = (char *)&v;
+	char *presult = (char *)&result;
+	int size = sizeof(T);
+
+	for (int i = 0; i < size; i++)
+		presult[size - 1 - i] = pv[i];
+
+	v = result;
+}
+
 void DataTable::load(const char *name, std::vector<Data> &table, float &mean, float &sd)
 {
 	using namespace std::literals;
@@ -807,13 +825,27 @@ void DataTable::load(const char *name, std::vector<Data> &table, float &mean, fl
 	auto size = rfd->tellg();
 	rfd->seekg(0, rfd->beg);
 
-	const float *fv = new float[size / sizeof(float) + 1];
-	rfd->read(reinterpret_cast<char *>(const_cast<float *>(fv)), size);
-
+	float *fv = new float[size / sizeof(float) + 1];
+	rfd->read(reinterpret_cast<char *>(fv), size);
+	
 	mean = fv[0];
 	sd = fv[1];
 
-	const StoredData *data = reinterpret_cast<const StoredData *>(fv + 2);
+	StoredData *data = reinterpret_cast<StoredData *>(fv + 2);
+
+	if constexpr (std::endian::native == std::endian::big)
+	{
+		byteswap(mean);
+		byteswap(sd);
+
+		byteswap(data->mean);
+		byteswap(data->mean_vs_random);
+		byteswap(data->sd);
+		byteswap(data->sd_vs_random);
+		byteswap(data->binSpacing);
+		byteswap(data->offset);
+	}
+
 	size_t ix = 0;
 	while (data[ix].aa[0] != 0)
 		++ix;
