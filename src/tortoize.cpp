@@ -837,18 +837,23 @@ void DataTable::load(const char *name, std::vector<Data> &table, float &mean, fl
 	{
 		byteswap(mean);
 		byteswap(sd);
-
-		byteswap(data->mean);
-		byteswap(data->mean_vs_random);
-		byteswap(data->sd);
-		byteswap(data->sd_vs_random);
-		byteswap(data->binSpacing);
-		byteswap(data->offset);
 	}
 
 	size_t ix = 0;
 	while (data[ix].aa[0] != 0)
+	{
 		++ix;
+
+		if constexpr (std::endian::native == std::endian::big)
+		{
+			byteswap(data[ix].mean);
+			byteswap(data[ix].mean_vs_random);
+			byteswap(data[ix].sd);
+			byteswap(data[ix].sd_vs_random);
+			byteswap(data[ix].binSpacing);
+			byteswap(data[ix].offset);
+		}
+	}
 
 	size_t n = ix;
 	const uint8_t *bits = reinterpret_cast<const uint8_t *>(fv + 2) + (n + 1) * sizeof(StoredData);
