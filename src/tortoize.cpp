@@ -841,9 +841,13 @@ void DataTable::load(const char *name, std::vector<Data> &table, float &mean, fl
 
 	size_t ix = 0;
 	while (data[ix].aa[0] != 0)
-	{
 		++ix;
 
+	size_t n = ix;
+	const uint8_t *bits = reinterpret_cast<const uint8_t *>(fv + 2) + (n + 1) * sizeof(StoredData);
+
+	for (ix = 0; ix < n; ++ix)
+	{
 		if constexpr (std::endian::native == std::endian::big)
 		{
 			byteswap(data[ix].mean);
@@ -853,13 +857,9 @@ void DataTable::load(const char *name, std::vector<Data> &table, float &mean, fl
 			byteswap(data[ix].binSpacing);
 			byteswap(data[ix].offset);
 		}
-	}
 
-	size_t n = ix;
-	const uint8_t *bits = reinterpret_cast<const uint8_t *>(fv + 2) + (n + 1) * sizeof(StoredData);
-
-	for (ix = 0; ix < n; ++ix)
 		table.emplace_back(strcmp(name, "torsion-data.bin") == 0, data[ix], bits);
+	}
 }
 
 // --------------------------------------------------------------------
