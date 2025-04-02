@@ -1,3 +1,6 @@
+Version 2.0.15
+- Fix loading data tables on big-endian machines
+
 Version 2.0.14
 - Remove dependency on libzeep, unless building a web service of course
 

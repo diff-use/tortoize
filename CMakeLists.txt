@@ -25,7 +25,7 @@
 cmake_minimum_required(VERSION 3.25)
 
 # set the project name
-project(tortoize VERSION 2.0.14 LANGUAGES CXX)
+project(tortoize VERSION 2.0.15 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
