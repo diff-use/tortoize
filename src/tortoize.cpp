@@ -923,8 +923,8 @@ json calculateZScores(const cif::mm::structure &structure)
 				{ "asymID", res.get_asym_id() },
 				{ "seqID", res.get_seq_id() },
 				{ "compID", aa },
-				{ "pdb", { { "strandID", res.get_auth_asym_id() },
-							 { "seqNum", std::stoi(res.get_auth_seq_id()) },
+				{ "pdb", { { "strandID", res.get_pdb_strand_id() },
+							 { "seqNum", std::stoi(res.get_pdb_seq_num()) },
 							 { "compID", aa },
 							 { "insCode", res.get_pdb_ins_code() } } }
 			};

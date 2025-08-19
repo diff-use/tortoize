@@ -53,7 +53,7 @@ option(BUILD_FOR_CCP4 "Build a version to be installed in CCP4" OFF)
 
 if(BUILD_FOR_CCP4)
 	if("$ENV{CCP4}" STREQUAL "" OR NOT EXISTS $ENV{CCP4})
-		message(FATAL_ERROR "A CCP4 built was requested but CCP4 was not sourced")
+		message(FATAL_ERROR "tortoize: A CCP4 built was requested but CCP4 was not sourced")
 	else()
 		list(APPEND CMAKE_MODULE_PATH "$ENV{CCP4}")
 		list(APPEND CMAKE_PREFIX_PATH "$ENV{CCP4}")
@@ -94,7 +94,7 @@ find_package(Mrc QUIET)
 if(MRC_FOUND)
 	option(USE_RSRC "Use mrc to create resources" ON)
 else()
-	message(STATUS "Not using resources since mrc was not found")
+	message(STATUS "tortoize: Not using resources since mrc was not found")
 	set(USE_RSRC OFF)
 endif()
 
@@ -114,7 +114,7 @@ find_package(Threads)
 find_package(nlohmann_json REQUIRED)
 
 find_or_fetch_package(mcfp VERSION 1.3.5 GIT_REPOSITORY https://github.com/mhekkel/libmcfp GIT_TAG b6c62a3)
-find_or_fetch_package(cifpp VERSION 7 GIT_REPOSITORY https://github.com/PDB-REDO/libcifpp.git GIT_TAG v7.0.9 VARIABLES "CIFPP_SHARE_DIR")
+find_or_fetch_package(cifpp VERSION 9 GIT_REPOSITORY https://github.com/PDB-REDO/libcifpp.git GIT_TAG v7.0.9 VARIABLES "CIFPP_SHARE_DIR")
 
 if (NOT TARGET dssp)
 	add_subdirectory(dssp EXCLUDE_FROM_ALL)
@@ -137,8 +137,7 @@ endif()
 
 target_include_directories(tortoize PRIVATE ${PROJECT_BINARY_DIR})
 
-target_link_libraries(tortoize dssp::dssp cifpp::cifpp mcfp::mcfp)
-target_compile_definitions(tortoize PUBLIC NOMINMAX=1)
+target_link_libraries(tortoize dssp::dssp mcfp::mcfp cifpp::cifpp)
 
 install(TARGETS tortoize
 	RUNTIME DESTINATION ${BIN_INSTALL_DIR}
@@ -153,7 +152,7 @@ if(BUILD_WEBSERVICE)
 	find_package(zeep 6 REQUIRED)
 
 	if(NOT USE_RSRC)
-		message(FATAL_ERROR "Web service needs mrc/resources")
+		message(FATAL_ERROR "tortoize: Web service needs mrc/resources")
 	endif()
 
 	add_executable(tortoized
@@ -161,7 +160,7 @@ if(BUILD_WEBSERVICE)
 		${PROJECT_SOURCE_DIR}/src/tortoize-server-main.cpp
 	)
 
-	target_link_libraries(tortoized dssp::dssp cifpp::cifpp mcfp::mcfp zeep::zeep)
+	target_link_libraries(tortoized dssp::dssp mcfp::mcfp zeep::zeep)
 
 	mrc_target_resources(tortoized ${RESOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/docroot/)
 
