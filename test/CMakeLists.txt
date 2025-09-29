@@ -1,4 +1,4 @@
-find_or_fetch_package(Catch2 VERSION 3 GIT_REPOSITORY https://github.com/catchorg/Catch2.git GIT_TAG v3.8.0)
+find_or_fetch_package(Catch2 VERSION 3 GIT_REPOSITORY https://github.com/catchorg/Catch2.git GIT_TAG v3.4.0)
 
 
 add_executable(tortoize-unit-test
