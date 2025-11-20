@@ -1,3 +1,6 @@
+Version 2.0.16
+- Updated libcifpp
+
 Version 2.0.15
 - Fix loading data tables on big-endian machines
 
