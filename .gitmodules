@@ -7,3 +7,7 @@
 [submodule "dssp"]
 	path = dssp
 	url = https://github.com/PDB-REDO/dssp.git
+[submodule "extern/pybind11_json"]
+	path = extern/pybind11_json
+	url = ../../pybind/pybind11_json
+	branch = master

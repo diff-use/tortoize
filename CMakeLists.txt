@@ -41,6 +41,12 @@ include(CTest)
 set(CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)  # needed to build dynamic libraries for python
+
+# For pixi/pip builds, make sure the pixi path comes first.
+if(DEFINED ENV{PREFIX})
+	list(PREPEND CMAKE_PREFIX_PATH "$ENV{PREFIX}")
+endif()
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers")
@@ -112,17 +118,43 @@ set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
 
 find_package(nlohmann_json REQUIRED)
+# this is protected by the 'if' statement because some other package sometimes
+# tries to also find mcfp
+#if(NOT TARGET mcfp::mcfp)
+#	find_or_fetch_package(
+#			mcfp VERSION 1.3.5
+#			GIT_REPOSITORY https://github.com/mhekkel/libmcfp
+#			GIT_TAG b6c62a3
+#	)
+#endif()
 
-find_or_fetch_package(mcfp VERSION 1.3.5 GIT_REPOSITORY https://github.com/mhekkel/libmcfp GIT_TAG b6c62a3)
+
 find_or_fetch_package(cifpp VERSION 9 GIT_REPOSITORY https://github.com/PDB-REDO/libcifpp.git GIT_TAG v9.0.5 VARIABLES "CIFPP_SHARE_DIR")
 
+# Pybind11 and passing JSON into Python
+set(PYBIND11_FINDPYTHON ON)
+find_package(pybind11 CONFIG REQUIRED)
+add_subdirectory(extern/pybind11_json)
+include_directories(extern/pybind11_json/include)
+
+set(Python3_FIND_STRATEGY LOCATION)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
+
+pybind11_add_module(py_tortoize src/python-bindings.cpp
+		${PROJECT_SOURCE_DIR}/src/tortoize.cpp
+		${PROJECT_SOURCE_DIR}/src/tortoize.hpp
+)
+include(GNUInstallDirs)
+install(TARGETS py_tortoize
+		LIBRARY DESTINATION .
+)
 if (NOT TARGET dssp)
 	add_subdirectory(dssp EXCLUDE_FROM_ALL)
 endif()
 
-add_executable(tortoize
-	${PROJECT_SOURCE_DIR}/src/tortoize.cpp
-	${PROJECT_SOURCE_DIR}/src/tortoize-main.cpp)
+#add_executable(tortoize
+#	${PROJECT_SOURCE_DIR}/src/tortoize.cpp
+#	${PROJECT_SOURCE_DIR}/src/tortoize-main.cpp)
 
 if(USE_RSRC)
 	list(APPEND RESOURCES
@@ -135,45 +167,18 @@ if(USE_RSRC)
 	mrc_target_resources(tortoize ${RESOURCES})
 endif()
 
-target_include_directories(tortoize PRIVATE ${PROJECT_BINARY_DIR})
+#target_include_directories(tortoize PRIVATE ${PROJECT_BINARY_DIR})
 
-target_link_libraries(tortoize dssp::dssp mcfp::mcfp cifpp::cifpp)
+#target_link_libraries(tortoize PRIVATE nlohmann_json dssp::dssp mcfp::mcfp cifpp::cifpp)
+target_link_libraries(py_tortoize PRIVATE nlohmann_json dssp::dssp cifpp::cifpp Python3::Module)
 
-install(TARGETS tortoize
-	RUNTIME DESTINATION ${BIN_INSTALL_DIR}
-)
+#install(TARGETS tortoize
+#	RUNTIME DESTINATION ${BIN_INSTALL_DIR}
+#)
 
 if(NOT USE_RSRC)
 	install(FILES ${PROJECT_SOURCE_DIR}/rsrc/rama-data.bin ${PROJECT_SOURCE_DIR}/rsrc/torsion-data.bin
 		DESTINATION ${CIFPP_SHARE_DIR})
-endif()
-
-if(BUILD_WEBSERVICE)
-	find_package(zeep 6 REQUIRED)
-
-	if(NOT USE_RSRC)
-		message(FATAL_ERROR "tortoize: Web service needs mrc/resources")
-	endif()
-
-	add_executable(tortoized
-		${PROJECT_SOURCE_DIR}/src/tortoize.cpp
-		${PROJECT_SOURCE_DIR}/src/tortoize-server-main.cpp
-	)
-
-	target_link_libraries(tortoized dssp::dssp mcfp::mcfp zeep::zeep)
-
-	mrc_target_resources(tortoized ${RESOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/docroot/)
-
-	install(TARGETS tortoized
-		RUNTIME DESTINATION ${SBIN_INSTALL_DIR}
-	)
-
-	set(TORTOIZED_EXE "${CMAKE_INSTALL_FULL_SBINDIR}/tortoized")
-	set(TORTOIZED_PID "/var/run/tortoized")
-
-	configure_file(tortoized.service.in ${CMAKE_CURRENT_BINARY_DIR}/tortoized.service @ONLY)
-
-	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/tortoized.service" DESTINATION "/etc/systemd/system")
 endif()
 
 # manual

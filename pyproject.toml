@@ -1,0 +1,105 @@
+[build-system]
+requires = [
+    "scikit-build-core>=0.11",
+    "pybind11>=3.0",
+]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "py_tortoize"
+version = "0.1"
+description = "Python bindings and scripts for PDB-REDO/tortoize"
+authors = [{name = "Marcus D. Collins", email = "marcus.collins@astera.org"}]
+requires-python = ">= 3.12, < 3.13"
+dependencies = [
+    "gemmi",
+]
+
+[tool.scikit-build]
+minimum-version = "build-system.requires"
+build-dir = "build/{wheel_tag}"
+ninja.make-fallback = true
+cmake.args = [
+    "-DPython3_EXECUTABLE=$ENV{PREFIX}/bin/python",
+    "-DPython3_ROOT_DIR=$ENV{PREFIX}",
+    "-DPython3_FIND_STRATEGY=LOCATION",
+#    "-DCMAKE_C_COMPILER=$ENV{CC}",
+#    "-DCMAKE_CXX_COMPILER=$ENV{CXX}"
+]
+
+[tool.pixi.activation.env]
+PYTHONNOUSERSITE = "1"
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+preview = ["pixi-build"]
+
+[tool.pixi.dependencies]
+python = "3.12.*"
+pip = "*"
+cmake = "*"
+ninja = "*"
+zlib = "*"
+gsl = "*"
+pkg-config = "*"
+# Compilers:
+c-compiler = "*"
+cxx-compiler = "*"  # recommended by ChatGPT to force a consistent compiler for all libs
+nlohmann_json = "*"
+catch2 = "*"
+py_tortoize = {path = "."}
+
+[tool.pixi.pypi-dependencies]
+py_tortoize = { path = ".", editable = true }
+
+
+[tool.pixi.environments]
+analysis = {features = ["analysis"]}
+
+[tool.pixi.package]
+name = "py_tortoize"
+version = "0.1.0"
+
+[tool.pixi.package.build]
+backend = { name = "pixi-build-cmake", version = "0.*" }
+
+[tool.pixi.package.build.config]
+# FIXME: there must be some more general way to specify all of this...
+extra-args = [
+    "-DCMAKE_BUILD_TYPE=Debug",
+    "-DLINUX_FLAG=ON",
+    "-DPython3_EXECUTABLE=$PREFIX/bin/python",
+    "-DPython3_ROOT_DIR=$PREFIX",
+    "-DPython3_FIND_STRATEGY=LOCATION"
+]
+
+[tool.pixi.package.host-dependencies]
+cmake = "3.25.*"
+pybind11 = "*"
+python = "3.12.*"
+pcre2 = "*"
+nlohmann_json = "*"
+catch2 = "*"
+
+[tool.pixi.package.build-dependencies]
+cmake = "3.25.*"
+pybind11 = "*"
+python = "3.12.*"
+pcre2 = "*"
+nlohmann_json = "*"
+catch2 = "*"
+
+[dependency-groups]
+analysis = [
+    "polars",
+    "mdtraj",
+    "marimo",
+    "matplotlib",
+    "seaborn",
+    "pandas",
+    "pyzmq",
+    "ipython",
+    "scikit-learn"
+]
+
