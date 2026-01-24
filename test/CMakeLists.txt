@@ -4,6 +4,11 @@ endif()
 
 find_or_fetch_package(Catch2 VERSION 3 GIT_REPOSITORY https://github.com/catchorg/Catch2.git GIT_TAG v3.4.0)
 
+set(PYBIND11_FINDPYTHON ON)
+find_package(pybind11 CONFIG REQUIRED)
+set(Python3_FIND_STRATEGY LOCATION)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module Development.Embed)
+
 
 add_executable(tortoize-unit-test
 	${PROJECT_SOURCE_DIR}/test/tortoize-unit-test.cpp
@@ -12,7 +17,7 @@ add_executable(tortoize-unit-test
 target_compile_definitions(tortoize-unit-test PUBLIC NOMINMAX=1)
 target_include_directories(tortoize-unit-test PRIVATE ${PROJECT_SOURCE_DIR}/src ${PROJECT_BINARY_DIR})
 
-target_link_libraries(tortoize-unit-test dssp::dssp cifpp::cifpp Catch2::Catch2WithMain)
+target_link_libraries(tortoize-unit-test dssp::dssp cifpp::cifpp Catch2::Catch2WithMain pybind11::embed)
 
 add_test(NAME tortoize-unit-test COMMAND $<TARGET_FILE:tortoize-unit-test> --data-dir ${PROJECT_SOURCE_DIR}/test)
 

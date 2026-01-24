@@ -28,8 +28,12 @@
 
 #include <nlohmann/json.hpp>
 
+namespace fs = std::filesystem;
+
+fs::path extract_python_executable_path();
+
 void buildDataFile(const std::filesystem::path &dir);
 
 nlohmann::json calculateZScores(const cif::mm::structure& structure);
 
-nlohmann::json tortoize_calculate(const std::filesystem::path &xyzin);
+nlohmann::json tortoize_calculate(cif::file& f);

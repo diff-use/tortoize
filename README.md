@@ -32,6 +32,11 @@ cmake --build build
 sudo cmake --install build
 ```
 
+to actually use with pixi, it seems you have to do this: 
+```console
+pixi run -e analysis python -m pip install .
+```
+
 Usage
 -----
 

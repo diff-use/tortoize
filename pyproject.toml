@@ -48,10 +48,11 @@ c-compiler = "*"
 cxx-compiler = "*"  # recommended by ChatGPT to force a consistent compiler for all libs
 nlohmann_json = "*"
 catch2 = "*"
-py_tortoize = {path = "."}
+py_tortoize = {path = "."}  # don't add or it will override from a mystery location.
 
-[tool.pixi.pypi-dependencies]
-py_tortoize = { path = ".", editable = true }
+#[tool.pixi.pypi-dependencies]
+# Do not include this, it seems to fail to install properly.
+#py_tortoize = { path = ".", editable = false }
 
 
 [tool.pixi.environments]

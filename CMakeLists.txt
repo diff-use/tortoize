@@ -95,15 +95,16 @@ include(VersionString)
 write_version_header(${PROJECT_SOURCE_DIR}/src)
 
 # Optionally use mrc to create resources
-find_package(Mrc QUIET)
+#find_package(mrc QUIET)
 
-if(MRC_FOUND)
-	option(USE_RSRC "Use mrc to create resources" ON)
-else()
-	message(STATUS "tortoize: Not using resources since mrc was not found")
-	set(USE_RSRC OFF)
-endif()
+#if(MRC_FOUND)
+#	option(USE_RSRC "Use mrc to create resources" ON)
+#else()
+#	message(STATUS "tortoize: Not using resources since mrc was not found")
+#	set(USE_RSRC OFF)
+#endif()
 
+set(USE_RSRC OFF)
 if(USE_RSRC)
 	set(USE_RSRC 1)
 	add_compile_definitions(USE_RSRC)
@@ -164,7 +165,7 @@ if(USE_RSRC)
 		${CIFPP_SHARE_DIR}/mmcif_ddl.dic
 		${CIFPP_SHARE_DIR}/mmcif_ma.dic)
 
-	mrc_target_resources(tortoize ${RESOURCES})
+	mrc_target_resources(py_tortoize ${RESOURCES})
 endif()
 
 #target_include_directories(tortoize PRIVATE ${PROJECT_BINARY_DIR})
