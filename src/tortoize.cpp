@@ -897,7 +897,10 @@ void byteswap(T &v)
 			byteswap(data[ix].offset);
 		}
 
-		table.emplace_back(strcmp(name, "torsion-data.bin") == 0, data[ix], bits);
+		// if the data table name contains "torsion", then use torsion mode in the constructor
+		// this is _less_ brittle than what was here before, but still somewhat brittle.
+		bool torsion = strstr(name, "torsion") != nullptr;
+		table.emplace_back(torsion, data[ix], bits);
 	}
 }
 

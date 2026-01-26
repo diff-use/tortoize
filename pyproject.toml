@@ -12,7 +12,7 @@ description = "Python bindings and scripts for PDB-REDO/tortoize"
 authors = [{name = "Marcus D. Collins", email = "marcus.collins@astera.org"}]
 requires-python = ">= 3.12, < 3.13"
 dependencies = [
-    "gemmi",
+    "gemmi", "pytest"
 ]
 
 [tool.scikit-build]
@@ -23,8 +23,6 @@ cmake.args = [
     "-DPython3_EXECUTABLE=$ENV{PREFIX}/bin/python",
     "-DPython3_ROOT_DIR=$ENV{PREFIX}",
     "-DPython3_FIND_STRATEGY=LOCATION",
-#    "-DCMAKE_C_COMPILER=$ENV{CC}",
-#    "-DCMAKE_CXX_COMPILER=$ENV{CXX}"
 ]
 
 [tool.pixi.activation.env]
