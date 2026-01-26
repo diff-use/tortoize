@@ -29,7 +29,12 @@ pixi run -e analysis python -m pytest test/test_python_api.py
 
 Using from other pixi packages
 ------------------------------
-TODO
+To use this package from another pixi package, add it like so to your dependencies:
+```toml
+[dependencies]
+...
+py_tortoize = { git = "https://github.com/diff-use/tortoize.git", branch = "mdc-python-bindings" }
+```
 
 Installation with system python
 -------------------------------
@@ -57,6 +62,10 @@ cmake --build build
 sudo cmake --install build
 ```
 
+Note that PyTortoize requires that the binary distribution files under `rsrc` be in a folder
+relative to where your Python is installed. E.g. if your Python is installed in `/usr/bin/python3`,
+you should make sure the files are available in `/usr/share/libcifpp/.`. The installation should
+take care of this, but be aware of it if you get strange file read errors.
 
 Usage
 -----

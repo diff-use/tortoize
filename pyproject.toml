@@ -39,6 +39,7 @@ pip = "*"
 cmake = "*"
 ninja = "*"
 zlib = "*"
+libzlib = "*"
 gsl = "*"
 pkg-config = "*"
 # Compilers:
