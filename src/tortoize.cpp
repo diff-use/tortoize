@@ -3,6 +3,8 @@
  *
  * Copyright (c) 2020 NKI/AVL, Netherlands Cancer Institute
  *
+ * Updated for Python bindings, changes Copyright (c) 2026 Astera Institute
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
@@ -173,7 +175,7 @@ class IBitStream
 // --------------------------------------------------------------------
 //    Arrays
 //    This is a simplified version of the array compression routines in MRS
-//    Only supported datatype is uint32_t and only supported width it 24 bit.
+//    Only supported datatype is uint32_t and only supported width is 24 bit.
 
 struct Selector
 {
@@ -897,10 +899,7 @@ void byteswap(T &v)
 			byteswap(data[ix].offset);
 		}
 
-		// if the data table name contains "torsion", then use torsion mode in the constructor
-		// this is _less_ brittle than what was here before, but still somewhat brittle.
-		bool torsion = strstr(name, "torsion") != nullptr;
-		table.emplace_back(torsion, data[ix], bits);
+		table.emplace_back(strcmp(name, "torsion-data.bin") == 0, data[ix], bits);
 	}
 }
 

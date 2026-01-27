@@ -1,3 +1,6 @@
+py_tortoize version 0.1.0
+- Initial release introducing Python bindings
+
 Version 2.0.16
 - Updated libcifpp
 

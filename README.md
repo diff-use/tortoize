@@ -1,7 +1,8 @@
 PyTortoize
 ========
 
-Application to calculate ramachandran z-scores, now accessible from Python.
+Application to calculate ramachandran z-scores, now accessible from Python. This package is a fork 
+of the original PDB-REDO/tortoize repository. Changes are Copyright (c) 2026 Astera Institute.
 
 Building
 --------
@@ -16,6 +17,8 @@ It may be possible to simplify these instructions, but for now, do this:
 ```console
 git clone https://github.com/diff-use/tortoize.git
 cd tortoize
+git submodule sync --recursive
+git submodule update --init --recursive
 pixi install -e analysis && pixi run -e analysis python -m pip install .
 ```
 

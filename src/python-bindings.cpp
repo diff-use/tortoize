@@ -1,6 +1,7 @@
 //
-// Created by Marcus Collins on 1/16/26.
+// Marcus Collins, 1/16/26.
 // marcus.collins@astera.org
+// Copyright (c) 2026 Astera Institute
 //
 
 #define PYBIND11_DETAILED_ERROR_MESSAGES
@@ -17,17 +18,6 @@ namespace py = pybind11;
 namespace nl = nlohmann;
 using namespace pybind11::literals;
 
-int add(int x, int y) { return x + y; }
-
-//---------------------------------------------------------------------
-// Needed to reliably find resources in all python environments
-/*fs::path extract_python_executable_path() {
-    py::module py_sys = py::module::import("sys");
-    py::str py_exec = py_sys.attr("executable");
-    fs::path py_exec_path = fs::path(py_exec.cast<std::string>());
-    return py_exec_path;
-}
-*/
 
 py::object tortoize_compute_stats(std::string const &structure_file_path) {
     py::print("Opening structure file to stream", structure_file_path);
@@ -48,11 +38,9 @@ py::object tortoize_compute_stats(std::string const &structure_file_path) {
     if (structure_file.empty())
         throw std::runtime_error("Invalid or empty mmCIF/PDB file");
 
-    py::print("Structure file read in and a bit more newer!");
-
     nl::json data{
 		    { "software",
-                { { "name", "tortoize" },
+                { { "name", "py_tortoize" },
                     { "version", kVersionNumber },
                     { "reference", "Sobolev et al. A Global Ramachandran Score Identifies Protein Structures with Unlikely Stereochemistry, Structure (2020)" },
                     { "reference-doi", "https://doi.org/10.1016/j.str.2020.08.005" } } }
@@ -77,17 +65,20 @@ py::object tortoize_compute_stats(std::string const &structure_file_path) {
         data["model"][std::to_string(model)] = calculateZScores(structure);
     }
 
-    //nl::json data = tortoize_calculate(structure_file);
+    // inline test for debugging
+    for (auto r: data["model"][std::to_string(1)]["residues"])
+    {
+        if (r.contains("torsion"))
+            py::print("Warning for residue ", r["seqID"], r["compID"], " has z-score ", r["torsion"]["z-score"]);
+    }
 
     py::object pystats = data;
     return pystats;
-    //return 0;
 }
 
 PYBIND11_MODULE(py_tortoize, m)
 {
     m.doc() = "Python bindings to PDB-REDO/tortoize module for computing side chain and backbone geometry statistics.";
-    m.def("add", &add, "A function which adds two numbers");
     m.def("tortoize_compute_stats", &tortoize_compute_stats,
         R"pbdoc(Output tortoize statistics for a structure
 

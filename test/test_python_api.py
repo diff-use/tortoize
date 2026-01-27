@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Astera Institute
+#
 # run with `pixi run -e analysis python test_python_api.py`
 # this is a simple integration test to ensure that we get the expected results for the included cif
 
