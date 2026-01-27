@@ -60,6 +60,17 @@ analysis = {features = ["analysis"]}
 name = "py_tortoize"
 version = "0.1.0"
 
+[tool.pixi.tasks.crawl]
+cmd = "python src/py_tortoize/scan_and_collect_results.py --parent-directory {{parentdir}} --output-file-prefix {{output_prefix}} --target-file-pattern {{pattern}}"
+default-environment = "analysis"
+args = [
+    "parentdir",  # top level directory to crawl for result files
+    # the filename prefix for the residue-level and protein-level output files
+    {"arg" = "output_prefix", "default" = "tortoize_output"},
+    # the pattern to search for structure files.
+    {"arg" = "pattern", "default" = "refined.cif"}
+]
+
 [tool.pixi.package.build]
 backend = { name = "pixi-build-cmake", version = "0.*" }
 

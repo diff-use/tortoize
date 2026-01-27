@@ -843,7 +843,6 @@ void byteswap(T &v)
 {
 	using namespace std::literals;
 
-	//std::cerr << "tortoize::DataTable::load Attempting to load data from " << name << std::endl;
 	auto rfd = cif::load_resource(name);
 
 	if (not rfd)
@@ -852,13 +851,6 @@ void byteswap(T &v)
 	rfd->clear();
 	rfd->seekg(0, std::ios::end);
 	auto endpos = rfd->tellg();
-	/*
-	std::cerr << "Resource " << name
-			  << " tellg(end)=" << endpos
-			  << " fail=" << rfd->fail()
-			  << " bad=" << rfd->bad()
-			  << "\n";
-    */
 	if (endpos <= 0)
 		throw std::runtime_error(std::string("Resource stream not seekable or empty for ") + name);
 
@@ -898,8 +890,11 @@ void byteswap(T &v)
 			byteswap(data[ix].binSpacing);
 			byteswap(data[ix].offset);
 		}
-
-		table.emplace_back(strcmp(name, "torsion-data.bin") == 0, data[ix], bits);
+		
+		// if the data table name contains "torsion", then use torsion mode in the constructor
+		// this is _less_ brittle than what was here before, but still somewhat brittle.
+		bool torsion = strstr(name, "torsion") != nullptr;
+		table.emplace_back(torsion, data[ix], bits);
 	}
 }
 
@@ -936,11 +931,8 @@ float jackknife(const std::vector<float> &zScorePerResidue)
 
 json calculateZScores(const cif::mm::structure &structure)
 {
-	std::cerr << "Calculating z-scores... running dssp" << std::endl;
 	dssp dssp(structure, 3, false);
-	std::cerr << "done. Initializing data table" << std::endl;
 	auto &tbl = DataTable::instance();
-	std::cerr << "done." << std::endl;
 
 	double ramaZScoreSum = 0;
 	size_t ramaZScoreCount = 0;
@@ -949,8 +941,6 @@ json calculateZScores(const cif::mm::structure &structure)
 
 	json residues;
 	std::vector<float> ramaZScorePerResidue, torsZScorePerResidue;
-
-	std::cerr << "Calculating z-scores for each residue" << std::endl;
 
 	for (auto &poly : structure.polymers())
 	{

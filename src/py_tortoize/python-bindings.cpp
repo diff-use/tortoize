@@ -9,8 +9,8 @@
 #include "pybind11_json/pybind11_json.hpp"
 #include <nlohmann/json.hpp>
 
-#include "tortoize.hpp"
-#include "revision.hpp"
+#include "../cpp/tortoize.hpp"
+#include "../cpp/revision.hpp"
 #include "pybind11/pybind11.h"
 
 namespace fs = std::filesystem;
@@ -63,13 +63,6 @@ py::object tortoize_compute_stats(std::string const &structure_file_path) {
 
         py::print("Calculating z-scores for ", std::to_string(model));
         data["model"][std::to_string(model)] = calculateZScores(structure);
-    }
-
-    // inline test for debugging
-    for (auto r: data["model"][std::to_string(1)]["residues"])
-    {
-        if (r.contains("torsion"))
-            py::print("Warning for residue ", r["seqID"], r["compID"], " has z-score ", r["torsion"]["z-score"]);
     }
 
     py::object pystats = data;

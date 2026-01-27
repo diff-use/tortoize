@@ -9,4 +9,4 @@ node_modules
 .gdb_history
 docroot/css
 docroot/scripts
-src/revision.hpp
+src/cpp/revision.hpp

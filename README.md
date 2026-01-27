@@ -32,12 +32,13 @@ pixi run -e analysis python -m pytest test/test_python_api.py
 
 Using from other pixi packages
 ------------------------------
-To use this package from another pixi package, add it like so to your dependencies:
+To use this package from another pixi package, you should be able add it like so to your dependencies:
 ```toml
 [dependencies]
 ...
 py_tortoize = { git = "https://github.com/diff-use/tortoize.git", branch = "mdc-python-bindings" }
 ```
+However this does not work yet. 
 
 Installation with system python
 -------------------------------

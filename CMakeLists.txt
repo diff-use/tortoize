@@ -119,16 +119,6 @@ set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
 
 find_package(nlohmann_json REQUIRED)
-# this is protected by the 'if' statement because some other package sometimes
-# tries to also find mcfp
-#if(NOT TARGET mcfp::mcfp)
-#	find_or_fetch_package(
-#			mcfp VERSION 1.3.5
-#			GIT_REPOSITORY https://github.com/mhekkel/libmcfp
-#			GIT_TAG b6c62a3
-#	)
-#endif()
-
 
 find_or_fetch_package(cifpp VERSION 9 GIT_REPOSITORY https://github.com/PDB-REDO/libcifpp.git GIT_TAG v9.0.5 VARIABLES "CIFPP_SHARE_DIR")
 
@@ -141,9 +131,9 @@ include_directories(extern/pybind11_json/include)
 set(Python3_FIND_STRATEGY LOCATION)
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
 
-pybind11_add_module(py_tortoize src/python-bindings.cpp
-		${PROJECT_SOURCE_DIR}/src/tortoize.cpp
-		${PROJECT_SOURCE_DIR}/src/tortoize.hpp
+pybind11_add_module(py_tortoize ${PROJECT_SOURCE_DIR}/src/py_tortoize/python-bindings.cpp
+		${PROJECT_SOURCE_DIR}/src/cpp/tortoize.cpp
+		${PROJECT_SOURCE_DIR}/src/cpp/tortoize.hpp
 )
 include(GNUInstallDirs)
 install(TARGETS py_tortoize
@@ -152,10 +142,6 @@ install(TARGETS py_tortoize
 if (NOT TARGET dssp)
 	add_subdirectory(dssp EXCLUDE_FROM_ALL)
 endif()
-
-#add_executable(tortoize
-#	${PROJECT_SOURCE_DIR}/src/tortoize.cpp
-#	${PROJECT_SOURCE_DIR}/src/tortoize-main.cpp)
 
 if(USE_RSRC)
 	list(APPEND RESOURCES
@@ -168,14 +154,7 @@ if(USE_RSRC)
 	mrc_target_resources(py_tortoize ${RESOURCES})
 endif()
 
-#target_include_directories(tortoize PRIVATE ${PROJECT_BINARY_DIR})
-
-#target_link_libraries(tortoize PRIVATE nlohmann_json dssp::dssp mcfp::mcfp cifpp::cifpp)
 target_link_libraries(py_tortoize PRIVATE nlohmann_json dssp::dssp cifpp::cifpp Python3::Module)
-
-#install(TARGETS tortoize
-#	RUNTIME DESTINATION ${BIN_INSTALL_DIR}
-#)
 
 if(NOT USE_RSRC)
 	install(FILES ${PROJECT_SOURCE_DIR}/rsrc/rama-data.bin ${PROJECT_SOURCE_DIR}/rsrc/torsion-data.bin

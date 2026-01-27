@@ -12,7 +12,7 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module Developm
 
 add_executable(tortoize-unit-test
 	${PROJECT_SOURCE_DIR}/test/tortoize-unit-test.cpp
-	${PROJECT_SOURCE_DIR}/src/tortoize.cpp)
+		../src/cpp/tortoize.cpp)
 
 target_compile_definitions(tortoize-unit-test PUBLIC NOMINMAX=1)
 target_include_directories(tortoize-unit-test PRIVATE ${PROJECT_SOURCE_DIR}/src ${PROJECT_BINARY_DIR})
