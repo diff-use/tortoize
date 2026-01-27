@@ -37,6 +37,8 @@ preview = ["pixi-build"]
 python = "3.12.*"
 pip = "*"
 cmake = "*"
+dssp = "*"
+pybind11_json = "*"
 ninja = "*"
 zlib = "*"
 libzlib = "*"
@@ -76,7 +78,9 @@ extra-args = [
 
 [tool.pixi.package.host-dependencies]
 cmake = "3.25.*"
+dssp = "*"
 pybind11 = "*"
+pybind11_json = "*"
 python = "3.12.*"
 pcre2 = "*"
 nlohmann_json = "*"
@@ -84,7 +88,9 @@ catch2 = "*"
 
 [tool.pixi.package.build-dependencies]
 cmake = "3.25.*"
+dssp = "*"
 pybind11 = "*"
+pybind11_json = "*"
 python = "3.12.*"
 pcre2 = "*"
 nlohmann_json = "*"

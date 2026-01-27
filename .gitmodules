@@ -4,10 +4,3 @@
 [submodule "gxrio"]
 	path = gxrio
 	url = https://github.com/mhekkel/gxrio.git
-[submodule "dssp"]
-	path = dssp
-	url = https://github.com/PDB-REDO/dssp.git
-[submodule "extern/pybind11_json"]
-	path = extern/pybind11_json
-	url = https://github.com/pybind/pybind11_json.git
-	branch = master

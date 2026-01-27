@@ -135,8 +135,9 @@ find_or_fetch_package(cifpp VERSION 9 GIT_REPOSITORY https://github.com/PDB-REDO
 # Pybind11 and passing JSON into Python
 set(PYBIND11_FINDPYTHON ON)
 find_package(pybind11 CONFIG REQUIRED)
-add_subdirectory(extern/pybind11_json)
-include_directories(extern/pybind11_json/include)
+#add_subdirectory(extern/pybind11_json)
+#include_directories(extern/pybind11_json/include)
+find_package(pybind11_json)
 
 set(Python3_FIND_STRATEGY LOCATION)
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
@@ -149,9 +150,10 @@ include(GNUInstallDirs)
 install(TARGETS py_tortoize
 		LIBRARY DESTINATION .
 )
-if (NOT TARGET dssp)
-	add_subdirectory(dssp EXCLUDE_FROM_ALL)
-endif()
+find_package(dssp)
+#if (NOT TARGET dssp)
+#	add_subdirectory(dssp EXCLUDE_FROM_ALL)
+#endif()
 
 #add_executable(tortoize
 #	${PROJECT_SOURCE_DIR}/src/tortoize.cpp
