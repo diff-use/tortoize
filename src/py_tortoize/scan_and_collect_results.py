@@ -6,9 +6,9 @@ from pathlib import Path
 from typing import Any, Union
 
 import pandas as pd
+from loguru import logger
 
 from py_tortoize import tortoize_collect_stats
-
 
 
 def parse_args():
@@ -138,8 +138,9 @@ def get_protein_level_z_scores(tortoize_json: dict[str, Any]) -> pd.DataFrame:
             )
     return pd.DataFrame(out)
 
+
 def main(parent_directory, output_file_prefix, target_file_pattern):
-    paths = crawl_dir_by_depth(parent_directory, target_file_pattern, output_file_prefix, 5)
+    paths = crawl_dir_by_depth(parent_directory, target_file_pattern, 5)
     all_protein_results = []
     all_residue_results = []
     for path in paths:
@@ -152,16 +153,15 @@ def main(parent_directory, output_file_prefix, target_file_pattern):
         protein_level_stats["path"] = path
         all_protein_results.append(protein_level_stats)
 
-
     output_file = f"{output_file_prefix}_residues.csv"
     all_residue_results.to_csv(output_file, index=False)
-    print(f"Residue results saved to {output_file}")
+    logger.info(f"Residue results saved to {output_file}")
 
     output_file = f"{output_file_prefix}_protein_stats.csv"
     all_protein_results.to_csv(output_file, index=False)
-    print(f"Protein-level stats saved to {output_file}")
+    logger.info(f"Protein-level stats saved to {output_file}")
 
 
 if __name__ == "__main__":
     args = parse_args()
-    main(args.parent_directory, args.output_file_prefix, args.target_file_pattern)2
+    main(args.parent_directory, args.output_file_prefix, args.target_file_pattern)

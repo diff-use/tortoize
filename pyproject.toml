@@ -12,7 +12,7 @@ description = "Python bindings and scripts for PDB-REDO/tortoize"
 authors = [{name = "Marcus D. Collins", email = "marcus.collins@astera.org"}]
 requires-python = ">= 3.12, < 3.13"
 dependencies = [
-    "gemmi", "pytest"
+    "gemmi", "loguru", "pytest"
 ]
 
 [tool.scikit-build]
