@@ -145,11 +145,13 @@ endif()
 
 if(USE_RSRC)
 	list(APPEND RESOURCES
-		${PROJECT_SOURCE_DIR}/rsrc/rama-data.bin
-		${PROJECT_SOURCE_DIR}/rsrc/torsion-data.bin
-		${CIFPP_SHARE_DIR}/mmcif_pdbx.dic
-		${CIFPP_SHARE_DIR}/mmcif_ddl.dic
-		${CIFPP_SHARE_DIR}/mmcif_ma.dic)
+			${PROJECT_SOURCE_DIR}/rsrc/rama-data.bin
+		    ${PROJECT_SOURCE_DIR}/rsrc/torsion-data.bin
+			${CIFPP_SHARE_DIR}/components.cif
+			${CIFPP_SHARE_DIR}/mmcif_pdbx.dic
+			${CIFPP_SHARE_DIR}/mmcif_ddl.dic
+			${CIFPP_SHARE_DIR}/mmcif_ma.dic
+	)
 
 	mrc_target_resources(py_tortoize ${RESOURCES})
 endif()

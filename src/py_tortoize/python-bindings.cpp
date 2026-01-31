@@ -53,6 +53,9 @@ py::object tortoize_compute_stats(std::string const &structure_file_path) {
     fs::path mmcif_dic_path = py_exec_path.parent_path().parent_path() / "share/libcifpp/mmcif_pdbx.dic";
     py::print("Full mmcif dict path: ", std::string(mmcif_dic_path));
     cif::add_file_resource("mmcif_pdbx.dic", mmcif_dic_path);
+    fs::path components_path = py_exec_path.parent_path().parent_path() / "share/libcifpp/components.cif";
+    py::print("Full components dict path: ", std::string(components_path));
+    cif::add_file_resource("components.cif", components_path);
 
     py::print("Structure file stream opened, reading in");
     cif::file structure_file = cif::pdb::read(xyzinFile);
