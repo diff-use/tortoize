@@ -181,11 +181,11 @@ def main(parent_directory, output_file_prefix, target_file_pattern):
         all_protein_results.append(protein_level_stats)
 
     output_file = f"{output_file_prefix}_residues.csv"
-    all_residue_results.to_csv(output_file, index=False)
+    pd.concat(all_residue_results).to_csv(output_file, index=False)
     logger.info(f"Residue results saved to {output_file}")
 
     output_file = f"{output_file_prefix}_protein_stats.csv"
-    all_protein_results.to_csv(output_file, index=False)
+    pd.concat(all_protein_results).to_csv(output_file, index=False)
     logger.info(f"Protein-level stats saved to {output_file}")
 
 
