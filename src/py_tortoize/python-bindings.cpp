@@ -108,7 +108,7 @@ PYBIND11_MODULE(py_tortoize, m)
         We do not yet support restraint files.
         Returns
         -------
-        list[dict[str, Any]]
+        dict[str, Any]
             Various statistics for each residue in the .cif file.)pbdoc",
         py::arg("structure_file_path")
     );

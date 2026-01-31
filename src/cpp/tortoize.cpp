@@ -1106,8 +1106,6 @@ json tortoize_calculate(cif::file &f)
 
 	// --------------------------------------------------------------------
 
-	//cif::file f = cif::pdb::read(xyzin);
-
 	if (f.empty())
 		throw std::runtime_error("Invalid or empty mmCIF/PDB file");
 

@@ -42,11 +42,17 @@ from py_tortoize import tortoize_compute_stats
 
 def parse_args():
     parser = ArgumentParser()
-    parser.add_argument("--parent-directory", help="Directory to crawl for CIF files")
-    parser.add_argument("--output-file-prefix", help="Prefix for output file names")
-    parser.add_argument("--target-file-pattern",
-                        default="*.cif",
-                        help="Pattern to match target files, default is '*.cif'")
+    parser.add_argument(
+        "--parent-directory", help="Directory to crawl for CIF files", required=True
+    )
+    parser.add_argument(
+        "--output-file-prefix", help="Prefix for output file names", required=True
+    )
+    parser.add_argument(
+        "--target-file-pattern",
+        default="*.cif",
+        help="Pattern to match target files, default is '*.cif'"
+    )
     return parser.parse_args()
 
 
@@ -167,13 +173,17 @@ def get_stats_for_single_path(path: Path) -> tuple[DataFrame, DataFrame]:
 
     protein_level_stats = get_protein_level_z_scores(result)
     protein_level_stats["path"] = path
-    return protein_level_stats, residues
+    return residues, protein_level_stats
 
 
 def main(parent_directory, output_file_prefix, target_file_pattern):
     paths = crawl_dir_by_depth(parent_directory, target_file_pattern, 5)
+    if not paths:
+        logger.error("No CIF files were found to analyze. Exiting")
+        return
+
     results = Parallel(n_jobs=16)(delayed(get_stats_for_single_path)(path) for path in paths)
-    all_residue_results, all_protein_results = tuple(zip(*results))
+    all_residue_results, all_protein_results = tuple(zip(*results, strict=True))
 
     output_file = f"{output_file_prefix}_residues.csv"
     pd.concat(all_residue_results).to_csv(output_file, index=False)
