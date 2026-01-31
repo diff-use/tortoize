@@ -1,3 +1,30 @@
+"""
+* SPDX-License-Identifier: BSD-2-Clause
+*
+* Copyright (c) 2026 Astera Institute
+* Authored by Marcus D. Collins marcus.collins@astera.org
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*
+* 1. Redistributions of source code must retain the above copyright notice, this
+*    list of conditions and the following disclaimer
+* 2. Redistributions in binary form must reproduce the above copyright notice,
+*    this list of conditions and the following disclaimer in the documentation
+*    and/or other materials provided with the distribution.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+* ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+* ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+"""
+
 from __future__ import annotations
 
 import fnmatch
@@ -8,7 +35,7 @@ from typing import Any, Union
 import pandas as pd
 from loguru import logger
 
-from py_tortoize import tortoize_collect_stats
+from py_tortoize import tortoize_compute_stats
 
 
 def parse_args():
@@ -144,7 +171,7 @@ def main(parent_directory, output_file_prefix, target_file_pattern):
     all_protein_results = []
     all_residue_results = []
     for path in paths:
-        result = tortoize_collect_stats(path)
+        result = tortoize_compute_stats(str(path))
         residues = flatten_residues(result)
         residues["path"] = path
         all_residue_results.append(residues)
