@@ -29,11 +29,13 @@ from __future__ import annotations
 
 import fnmatch
 from argparse import ArgumentParser
+from joblib import Parallel, delayed
 from pathlib import Path
 from typing import Any, Union
 
 import pandas as pd
 from loguru import logger
+from pandas import DataFrame
 
 from py_tortoize import tortoize_compute_stats
 
@@ -149,36 +151,29 @@ def get_protein_level_z_scores(tortoize_json: dict[str, Any]) -> pd.DataFrame:
     out: list[dict[str, Any]] = []
     model_block = tortoize_json.get("model", {})
     for model_id, model_data in model_block.items():
-        residues = (model_data or {}).get("residues", [])
-        for r in residues:
-            rama = (r or {}).get("ramachandran", {})
-            tors = (r or {}).get("torsion", {})
-            out.append(
-                {
-                    "model": str(model_id),
-                    "ramachandran_z_score": rama.get("z-score", None),
-                    "torsion_z_score": tors.get("z-score", None),
-                    "ramachandran_jackknife_sd": rama.get("jackknife_sd", None),
-                    "torsion_jackknife_sd": tors.get("jackknife_sd", None),
-                    "residue_count": len(residues),
-                }
-            )
+        out.append({
+            "model": str(model_id),
+            "ramachandran_z_score": model_data.get("ramachandran-z", None),
+            "ramachandran_jackknife_sd": model_data.get("ramachandran-jackknife-sd", None),
+            "torsion_z_score": model_data.get("torsion-z", None),
+            "torsion_jackknife_sd": model_data.get("torsion-jackknife-sd", None)
+        })
     return pd.DataFrame(out)
+
+def get_stats_for_single_path(path: Path) -> tuple[DataFrame, DataFrame]:
+    result = tortoize_compute_stats(str(path))
+    residues = flatten_residues(result)
+    residues["path"] = path
+
+    protein_level_stats = get_protein_level_z_scores(result)
+    protein_level_stats["path"] = path
+    return protein_level_stats, residues
 
 
 def main(parent_directory, output_file_prefix, target_file_pattern):
     paths = crawl_dir_by_depth(parent_directory, target_file_pattern, 5)
-    all_protein_results = []
-    all_residue_results = []
-    for path in paths:
-        result = tortoize_compute_stats(str(path))
-        residues = flatten_residues(result)
-        residues["path"] = path
-        all_residue_results.append(residues)
-
-        protein_level_stats = get_protein_level_z_scores(result)
-        protein_level_stats["path"] = path
-        all_protein_results.append(protein_level_stats)
+    results = Parallel(n_jobs=16)(delayed(get_stats_for_single_path)(path) for path in paths)
+    all_residue_results, all_protein_results = tuple(zip(*results))
 
     output_file = f"{output_file_prefix}_residues.csv"
     pd.concat(all_residue_results).to_csv(output_file, index=False)
