@@ -7,12 +7,12 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "py_tortoize"
-version = "0.1"
+version = "0.1.0"
 description = "Python bindings and scripts for PDB-REDO/tortoize"
 authors = [{name = "Marcus D. Collins", email = "marcus.collins@astera.org"}]
 requires-python = ">= 3.12, < 3.13"
 dependencies = [
-    "gemmi", "loguru", "pytest"
+    "gemmi", "loguru"
 ]
 
 [tool.scikit-build]
@@ -112,4 +112,5 @@ analysis = [
     "ipython",
     "scikit-learn"
 ]
+test = ["pytest"]
 

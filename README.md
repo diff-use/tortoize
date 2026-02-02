@@ -1,7 +1,7 @@
 PyTortoize
 ========
 
-Application to calculate ramachandran z-scores, now accessible from Python. This package is a fork 
+Application to calculate Ramachandran z-scores, now accessible from Python. This package is a fork 
 of the original PDB-REDO/tortoize repository. Changes are Copyright (c) 2026 Astera Institute.
 
 Building

@@ -53,6 +53,11 @@ def parse_args():
         default="*.cif",
         help="Pattern to match target files, default is '*.cif'"
     )
+    parser.add_argument(
+        "--n-jobs",
+        default=-1,
+        help="Number of cpus to use for computing statistics. Default -1 (all cpus)"
+    )
     return parser.parse_args()
 
 
@@ -176,13 +181,13 @@ def get_stats_for_single_path(path: Path) -> tuple[DataFrame, DataFrame]:
     return residues, protein_level_stats
 
 
-def main(parent_directory, output_file_prefix, target_file_pattern):
+def main(parent_directory, output_file_prefix, target_file_pattern, jobs=16):
     paths = crawl_dir_by_depth(parent_directory, target_file_pattern, 5)
     if not paths:
         logger.error("No CIF files were found to analyze. Exiting")
         return
 
-    results = Parallel(n_jobs=16)(delayed(get_stats_for_single_path)(path) for path in paths)
+    results = Parallel(n_jobs=jobs)(delayed(get_stats_for_single_path)(path) for path in paths)
     all_residue_results, all_protein_results = tuple(zip(*results, strict=True))
 
     output_file = f"{output_file_prefix}_residues.csv"
@@ -196,4 +201,4 @@ def main(parent_directory, output_file_prefix, target_file_pattern):
 
 if __name__ == "__main__":
     args = parse_args()
-    main(args.parent_directory, args.output_file_prefix, args.target_file_pattern)
+    main(args.parent_directory, args.output_file_prefix, args.target_file_pattern, jobs=args.n_jobs)
