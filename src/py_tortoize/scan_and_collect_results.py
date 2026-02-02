@@ -56,6 +56,7 @@ def parse_args():
     parser.add_argument(
         "--n-jobs",
         default=-1,
+        type=int,
         help="Number of cpus to use for computing statistics. Default -1 (all cpus)"
     )
     return parser.parse_args()
@@ -181,7 +182,7 @@ def get_stats_for_single_path(path: Path) -> tuple[DataFrame, DataFrame]:
     return residues, protein_level_stats
 
 
-def main(parent_directory, output_file_prefix, target_file_pattern, jobs=16):
+def main(parent_directory, output_file_prefix, target_file_pattern, jobs=-1):
     paths = crawl_dir_by_depth(parent_directory, target_file_pattern, 5)
     if not paths:
         logger.error("No CIF files were found to analyze. Exiting")

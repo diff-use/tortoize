@@ -82,4 +82,4 @@ stats = py_tortoize.tortoize_compute_stats(cif_file)
 ```
 
 `cif_file` is a _string_ path to a CIF file, and can be a gzip archive. The output is a dictionary 
-including some metadata, summary statistics, and a list of residue-level metrics
+including some metadata, summary statistics, and a list of residue-level metrics.
