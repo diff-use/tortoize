@@ -12,11 +12,14 @@ the library as a shared library with your system Python.
 
 Pixi installation
 -----------------
+You should use the latest version of pixi, at the time of writing 0.63.2. You will also need to 
+download https://files.wwpdb.org/pub/pdb/data/monomers/components.cif.gz to the `rsrc` directory. 
 It may be possible to simplify these instructions, but for now, do this:
 
 ```console
 git clone https://github.com/diff-use/tortoize.git
 cd tortoize
+sudo curl -o rsrc/components.cif https://files.wwpdb.org/pub/pdb/data/monomers/components.cif
 git submodule sync --recursive
 git submodule update --init --recursive
 pixi install -e analysis && pixi run -e analysis python -m pip install .

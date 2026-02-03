@@ -54,23 +54,6 @@ elseif(MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
 endif()
 
-# Optionally build a version to be installed inside CCP4
-option(BUILD_FOR_CCP4 "Build a version to be installed in CCP4" OFF)
-
-if(BUILD_FOR_CCP4)
-	if("$ENV{CCP4}" STREQUAL "" OR NOT EXISTS $ENV{CCP4})
-		message(FATAL_ERROR "tortoize: A CCP4 built was requested but CCP4 was not sourced")
-	else()
-		list(APPEND CMAKE_MODULE_PATH "$ENV{CCP4}")
-		list(APPEND CMAKE_PREFIX_PATH "$ENV{CCP4}")
-		set(CMAKE_INSTALL_PREFIX "$ENV{CCP4}")
-
-		if(WIN32)
-			set(BUILD_SHARED_LIBS ON)
-		endif()
-	endif()
-endif()
-
 if(MSVC)
 	# make msvc standards compliant...
 	add_compile_options(/permissive-)
@@ -92,23 +75,7 @@ endif()
 
 # Create a revision file, containing the current git version info, if any
 include(VersionString)
-write_version_header(${PROJECT_SOURCE_DIR}/src)
-
-# Optionally use mrc to create resources
-#find_package(mrc QUIET)
-
-#if(MRC_FOUND)
-#	option(USE_RSRC "Use mrc to create resources" ON)
-#else()
-#	message(STATUS "tortoize: Not using resources since mrc was not found")
-#	set(USE_RSRC OFF)
-#endif()
-
-set(USE_RSRC OFF)
-if(USE_RSRC)
-	set(USE_RSRC 1)
-	add_compile_definitions(USE_RSRC)
-endif()
+write_version_header(${PROJECT_SOURCE_DIR}/src/cpp)
 
 # Optionally build a webservice
 option(BUILD_WEBSERVICE "Build a version with a webservice daemon" OFF)
@@ -143,25 +110,14 @@ if (NOT TARGET dssp)
 	add_subdirectory(dssp EXCLUDE_FROM_ALL)
 endif()
 
-if(USE_RSRC)
-	list(APPEND RESOURCES
-			${PROJECT_SOURCE_DIR}/rsrc/rama-data.bin
-		    ${PROJECT_SOURCE_DIR}/rsrc/torsion-data.bin
-			${CIFPP_SHARE_DIR}/components.cif
-			${CIFPP_SHARE_DIR}/mmcif_pdbx.dic
-			${CIFPP_SHARE_DIR}/mmcif_ddl.dic
-			${CIFPP_SHARE_DIR}/mmcif_ma.dic
-	)
-
-	mrc_target_resources(py_tortoize ${RESOURCES})
-endif()
-
 target_link_libraries(py_tortoize PRIVATE nlohmann_json dssp::dssp cifpp::cifpp Python3::Module)
 
-if(NOT USE_RSRC)
-	install(FILES ${PROJECT_SOURCE_DIR}/rsrc/rama-data.bin ${PROJECT_SOURCE_DIR}/rsrc/torsion-data.bin
-		DESTINATION ${CIFPP_SHARE_DIR})
-endif()
+install(FILES
+		${PROJECT_SOURCE_DIR}/rsrc/rama-data.bin
+		${PROJECT_SOURCE_DIR}/rsrc/torsion-data.bin
+		${PROJECT_SOURCE_DIR}/rsrc/components.cif
+		DESTINATION ${CIFPP_SHARE_DIR}
+)
 
 # manual
 install(FILES doc/tortoize.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
