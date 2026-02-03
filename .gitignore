@@ -3,8 +3,10 @@
 tortoize
 .vs/
 build
+cmake-build-debug
+cmake-build-debug-vpvm
 node_modules
 .gdb_history
 docroot/css
 docroot/scripts
-src/revision.hpp
+

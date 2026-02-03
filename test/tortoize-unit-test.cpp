@@ -24,9 +24,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 #include <catch2/catch_all.hpp>
 
-#include "tortoize.hpp"
+#include "cpp/tortoize.hpp"
 
 #include <nlohmann/json.hpp>
 
@@ -78,7 +79,12 @@ int main(int argc, char *argv[])
 
 TEST_CASE("first_test")
 {
-	auto a = tortoize_calculate(gTestDir / "1cbs.cif.gz");
+	cif::gzio::ifstream xyzinFile(gTestDir / "1cbs.cif.gz");
+	if (not xyzinFile.is_open())
+		throw std::runtime_error("Could not open xyzin file");
+	cif::file structure_file = cif::pdb::read(xyzinFile);
+
+	auto a = tortoize_calculate(structure_file);
 
 	std::ifstream bf(gTestDir / "1cbs.json");
 

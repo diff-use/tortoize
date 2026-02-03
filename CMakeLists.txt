@@ -41,28 +41,17 @@ include(CTest)
 set(CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)  # needed to build dynamic libraries for python
+
+# For pixi/pip builds, make sure the pixi path comes first.
+if(DEFINED ENV{PREFIX})
+	list(PREPEND CMAKE_PREFIX_PATH "$ENV{PREFIX}")
+endif()
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers")
 elseif(MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
-endif()
-
-# Optionally build a version to be installed inside CCP4
-option(BUILD_FOR_CCP4 "Build a version to be installed in CCP4" OFF)
-
-if(BUILD_FOR_CCP4)
-	if("$ENV{CCP4}" STREQUAL "" OR NOT EXISTS $ENV{CCP4})
-		message(FATAL_ERROR "tortoize: A CCP4 built was requested but CCP4 was not sourced")
-	else()
-		list(APPEND CMAKE_MODULE_PATH "$ENV{CCP4}")
-		list(APPEND CMAKE_PREFIX_PATH "$ENV{CCP4}")
-		set(CMAKE_INSTALL_PREFIX "$ENV{CCP4}")
-
-		if(WIN32)
-			set(BUILD_SHARED_LIBS ON)
-		endif()
-	endif()
 endif()
 
 if(MSVC)
@@ -86,22 +75,7 @@ endif()
 
 # Create a revision file, containing the current git version info, if any
 include(VersionString)
-write_version_header(${PROJECT_SOURCE_DIR}/src)
-
-# Optionally use mrc to create resources
-find_package(Mrc QUIET)
-
-if(MRC_FOUND)
-	option(USE_RSRC "Use mrc to create resources" ON)
-else()
-	message(STATUS "tortoize: Not using resources since mrc was not found")
-	set(USE_RSRC OFF)
-endif()
-
-if(USE_RSRC)
-	set(USE_RSRC 1)
-	add_compile_definitions(USE_RSRC)
-endif()
+write_version_header(${PROJECT_SOURCE_DIR}/src/cpp)
 
 # Optionally build a webservice
 option(BUILD_WEBSERVICE "Build a version with a webservice daemon" OFF)
@@ -113,68 +87,37 @@ find_package(Threads)
 
 find_package(nlohmann_json REQUIRED)
 
-find_or_fetch_package(mcfp VERSION 1.3.5 GIT_REPOSITORY https://github.com/mhekkel/libmcfp GIT_TAG b6c62a3)
 find_or_fetch_package(cifpp VERSION 9 GIT_REPOSITORY https://github.com/PDB-REDO/libcifpp.git GIT_TAG v9.0.5 VARIABLES "CIFPP_SHARE_DIR")
 
+# Pybind11 and passing JSON into Python
+set(PYBIND11_FINDPYTHON ON)
+find_package(pybind11 CONFIG REQUIRED)
+add_subdirectory(extern/pybind11_json)
+include_directories(extern/pybind11_json/include)
+
+set(Python3_FIND_STRATEGY LOCATION)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
+
+pybind11_add_module(py_tortoize ${PROJECT_SOURCE_DIR}/src/py_tortoize/python-bindings.cpp
+		${PROJECT_SOURCE_DIR}/src/cpp/tortoize.cpp
+		${PROJECT_SOURCE_DIR}/src/cpp/tortoize.hpp
+)
+include(GNUInstallDirs)
+install(TARGETS py_tortoize
+		LIBRARY DESTINATION .
+)
 if (NOT TARGET dssp)
 	add_subdirectory(dssp EXCLUDE_FROM_ALL)
 endif()
 
-add_executable(tortoize
-	${PROJECT_SOURCE_DIR}/src/tortoize.cpp
-	${PROJECT_SOURCE_DIR}/src/tortoize-main.cpp)
+target_link_libraries(py_tortoize PRIVATE nlohmann_json dssp::dssp cifpp::cifpp Python3::Module)
 
-if(USE_RSRC)
-	list(APPEND RESOURCES
+install(FILES
 		${PROJECT_SOURCE_DIR}/rsrc/rama-data.bin
 		${PROJECT_SOURCE_DIR}/rsrc/torsion-data.bin
-		${CIFPP_SHARE_DIR}/mmcif_pdbx.dic
-		${CIFPP_SHARE_DIR}/mmcif_ddl.dic
-		${CIFPP_SHARE_DIR}/mmcif_ma.dic)
-
-	mrc_target_resources(tortoize ${RESOURCES})
-endif()
-
-target_include_directories(tortoize PRIVATE ${PROJECT_BINARY_DIR})
-
-target_link_libraries(tortoize dssp::dssp mcfp::mcfp cifpp::cifpp)
-
-install(TARGETS tortoize
-	RUNTIME DESTINATION ${BIN_INSTALL_DIR}
+		${PROJECT_SOURCE_DIR}/rsrc/components.cif
+		DESTINATION ${CIFPP_SHARE_DIR}
 )
-
-if(NOT USE_RSRC)
-	install(FILES ${PROJECT_SOURCE_DIR}/rsrc/rama-data.bin ${PROJECT_SOURCE_DIR}/rsrc/torsion-data.bin
-		DESTINATION ${CIFPP_SHARE_DIR})
-endif()
-
-if(BUILD_WEBSERVICE)
-	find_package(zeep 6 REQUIRED)
-
-	if(NOT USE_RSRC)
-		message(FATAL_ERROR "tortoize: Web service needs mrc/resources")
-	endif()
-
-	add_executable(tortoized
-		${PROJECT_SOURCE_DIR}/src/tortoize.cpp
-		${PROJECT_SOURCE_DIR}/src/tortoize-server-main.cpp
-	)
-
-	target_link_libraries(tortoized dssp::dssp mcfp::mcfp zeep::zeep)
-
-	mrc_target_resources(tortoized ${RESOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/docroot/)
-
-	install(TARGETS tortoized
-		RUNTIME DESTINATION ${SBIN_INSTALL_DIR}
-	)
-
-	set(TORTOIZED_EXE "${CMAKE_INSTALL_FULL_SBINDIR}/tortoized")
-	set(TORTOIZED_PID "/var/run/tortoized")
-
-	configure_file(tortoized.service.in ${CMAKE_CURRENT_BINARY_DIR}/tortoized.service @ONLY)
-
-	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/tortoized.service" DESTINATION "/etc/systemd/system")
-endif()
 
 # manual
 install(FILES doc/tortoize.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)

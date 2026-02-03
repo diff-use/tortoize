@@ -3,6 +3,8 @@
  *
  * Copyright (c) 2020 NKI/AVL, Netherlands Cancer Institute
  *
+ * Updated for Python bindings, changes Copyright (c) 2026 Astera Institute
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
@@ -24,6 +26,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 #include "tortoize.hpp"
 #include "revision.hpp"
 
@@ -32,9 +35,28 @@
 #include <fstream>
 #include <vector>
 
-namespace fs = std::filesystem;
+#include <cstring>
+#include <stdexcept>
+#include <limits>
+#include <bit>        // std::endian
+#include "pybind11/pybind11.h"
 
+
+namespace fs = std::filesystem;
+namespace py = pybind11;
 using json = nlohmann::json;
+
+
+//---------------------------------------------------------------------
+// Needed to reliably find resources in all python environments
+fs::path extract_python_executable_path() {
+	py::module py_sys = py::module::import("sys");
+	py::str py_exec = py_sys.attr("executable");
+	fs::path py_exec_path = fs::path(py_exec.cast<std::string>());
+	return py_exec_path;
+}
+
+
 
 // --------------------------------------------------------------------
 // simple integer compression, based somewhat on MRS code
@@ -153,7 +175,7 @@ class IBitStream
 // --------------------------------------------------------------------
 //    Arrays
 //    This is a simplified version of the array compression routines in MRS
-//    Only supported datatype is uint32_t and only supported width it 24 bit.
+//    Only supported datatype is uint32_t and only supported width is 24 bit.
 
 struct Selector
 {
@@ -396,6 +418,8 @@ class Data
 		for (size_t i = 0; i < counts.size(); ++i)
 		{
 			float a1, a2;
+
+
 			std::tie(a1, a2) = angles(i);
 			std::cout << a1 << ' ' << a2 << ' ' << counts[i] << std::endl;
 		}
@@ -744,8 +768,10 @@ class DataTable
 
 DataTable::DataTable()
 {
-	load("torsion-data.bin", m_torsion, m_mean_torsion, m_sd_torsion);
-	load("rama-data.bin", m_ramachandran, m_mean_ramachandran, m_sd_ramachandran);
+	fs::path python_path = extract_python_executable_path();
+	fs::path prefix_dir = python_path.parent_path().parent_path();
+	load((prefix_dir / "share/libcifpp/torsion-data.bin").c_str(), m_torsion, m_mean_torsion, m_sd_torsion);
+	load((prefix_dir / "share/libcifpp/rama-data.bin").c_str(), m_ramachandran, m_mean_ramachandran, m_sd_ramachandran);
 }
 
 const Data &DataTable::loadTorsionData(const std::string &aa, SecStrType ss) const
@@ -812,7 +838,8 @@ void byteswap(T &v)
 	v = result;
 }
 
-void DataTable::load(const char *name, std::vector<Data> &table, float &mean, float &sd)
+
+ void DataTable::load(const char *name, std::vector<Data> &table, float &mean, float &sd)
 {
 	using namespace std::literals;
 
@@ -820,6 +847,12 @@ void DataTable::load(const char *name, std::vector<Data> &table, float &mean, fl
 
 	if (not rfd)
 		throw std::runtime_error("Missing resource "s + name);
+
+	rfd->clear();
+	rfd->seekg(0, std::ios::end);
+	auto endpos = rfd->tellg();
+	if (endpos <= 0)
+		throw std::runtime_error(std::string("Resource stream not seekable or empty for ") + name);
 
 	rfd->seekg(0, rfd->end);
 	auto size = rfd->tellg();
@@ -857,10 +890,14 @@ void DataTable::load(const char *name, std::vector<Data> &table, float &mean, fl
 			byteswap(data[ix].binSpacing);
 			byteswap(data[ix].offset);
 		}
-
-		table.emplace_back(strcmp(name, "torsion-data.bin") == 0, data[ix], bits);
+		
+		// if the data table name contains "torsion", then use torsion mode in the constructor
+		// this is _less_ brittle than what was here before, but still somewhat brittle.
+		bool torsion = strstr(name, "torsion") != nullptr;
+		table.emplace_back(torsion, data[ix], bits);
 	}
 }
+
 
 // --------------------------------------------------------------------
 
@@ -1057,7 +1094,7 @@ json calculateZScores(const cif::mm::structure &structure)
 
 // --------------------------------------------------------------------
 
-json tortoize_calculate(const fs::path &xyzin)
+json tortoize_calculate(cif::file &f)
 {
 	json data{
 		{ "software",
@@ -1068,8 +1105,6 @@ json tortoize_calculate(const fs::path &xyzin)
 	};
 
 	// --------------------------------------------------------------------
-
-	cif::file f = cif::pdb::read(xyzin);
 
 	if (f.empty())
 		throw std::runtime_error("Invalid or empty mmCIF/PDB file");
