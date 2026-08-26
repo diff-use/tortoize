@@ -17,7 +17,7 @@ download https://files.wwpdb.org/pub/pdb/data/monomers/components.cif.gz to the 
 It may be possible to simplify these instructions, but for now, do this:
 
 ```console
-git clone https://github.com/diff-use/tortoize.git
+git clone https://github.com/prism-science/tortoize.git
 cd tortoize
 sudo curl -o rsrc/components.cif https://files.wwpdb.org/pub/pdb/data/monomers/components.cif
 git submodule sync --recursive
@@ -39,7 +39,7 @@ To use this package from another pixi package, you should be able add it like so
 ```toml
 [dependencies]
 ...
-py_tortoize = { git = "https://github.com/diff-use/tortoize.git", branch = "mdc-python-bindings" }
+py_tortoize = { git = "https://github.com/prism-science/tortoize.git", branch = "mdc-python-bindings" }
 ```
 However this does not work yet. 
 
@@ -62,7 +62,7 @@ sudo apt-get update && sudo apt-get install catch2 nlohmann-json3-dev libeigen3-
 After that, building and installing should be as simple as:
 
 ```console
-git clone https://github.com/diff-use/tortoize.git
+git clone https://github.com/prism-science/tortoize.git
 cd tortoize
 cmake -S . -B build
 cmake --build build
